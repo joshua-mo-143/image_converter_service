@@ -17,4 +17,3 @@ curl -X POST -F file=@<image-or-archive-file> http://localhost:8000/convert
 ```
 ## TODO
 - Web form
-- Background task for getting rid of old uploads
