@@ -1,0 +1,17 @@
+[package]
+name = "imageconverter"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-compression = { version = "0.4.2", features = ["gzip", "tokio", "futures-io"] }
+async-std = "1.12.0"
+async-tar = "0.4.2"
+async_zip = { version = "0.0.15", features = ["tokio", "tokio-fs", "deflate"] }
+axum = { version = "0.6.20", features = ["multipart", "macros"] }
+futures-io = "0.3.28"
+image = { version = "0.24.7", features = ["webp", "webp-encoder"] }
+rand = "0.8.5"
+tokio = { version = "1.32.0", features = ["macros", "rt-multi-thread", "fs", "io-util"] }
