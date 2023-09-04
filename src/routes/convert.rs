@@ -119,13 +119,13 @@ pub async fn unpack_targz(str: Vec<u8>) -> Vec<u8> {
 
         let mut new_filepath = converted_path.clone().join(filename.clone());
         new_filepath.set_extension("webp");
-        let mut newfile = AsyncFile::create(new_filepath).await.unwrap();
-        newfile.write_all(&webp).await.unwrap();
-
-        ar.append_file(filename, &mut newfile).await.unwrap();
+	let new_filepath = new_filepath;
+	
+	let mut new_filename = PathBuf::from(filename.clone());	
+        new_filename.set_extension("webp");
+	let mut newfile = AsyncFile::open(new_filepath).await.unwrap();
+	ar.append_file(new_filename, &mut newfile).await.unwrap();
     }
-
-    ar.append_dir(converted_path, ".").await.unwrap();
 
     let e = ar.into_inner().await.unwrap();
 

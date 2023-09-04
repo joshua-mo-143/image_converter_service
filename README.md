@@ -10,10 +10,13 @@ You can also build the Docker image. It exposes port 8000 by default.
 
 Once you've built the Docker image and it's running (or you're running the service locally), you can try sending the service an image or compressed tarball!
 
-Currently there's no web form for the service that can take a file upload, but you can use curl to send a request, like so:
+You can then go to [http://localhost:8000](http://localhost:8000) (or whatever port you're running the service on) to access the web form!
+
+You can also use curl to send a request, like so:
 
 ```bash
 curl -X POST -F file=@<image-or-archive-file> http://localhost:8000/convert
 ```
 ## TODO
-- Web form
+- Make the web form less ugly
+- Support more image types
