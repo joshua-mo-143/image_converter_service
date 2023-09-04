@@ -6,8 +6,8 @@ use std::path::Path;
 use tokio::fs::create_dir;
 mod routes;
 mod tasks;
-use routes::frontend::{serve_homepage};
 use routes::convert::{convert_image, make_zipfile};
+use routes::frontend::serve_homepage;
 use tasks::maintenance::delete_old_uploads;
 #[tokio::main]
 async fn main() {
@@ -16,7 +16,7 @@ async fn main() {
     }
 
     let router = Router::new()
-	.route("/", get(serve_homepage))
+        .route("/", get(serve_homepage))
         .route("/convert", post(convert_image))
         .route("/convertzip", get(make_zipfile));
 

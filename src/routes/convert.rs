@@ -58,7 +58,9 @@ pub async fn handle_multipart(
         filedata = match filepath.extension() {
             None => None,
             Some(os_str) => match os_str.to_str() {
-                Some("webp") => Some(convert_imagebytes_to_webpbytes(bytes).await),
+                Some("webp") | Some("png") | Some("jpeg") | Some("jpg") => {
+                    Some(convert_imagebytes_to_webpbytes(bytes).await)
+                }
                 Some("gz") => Some(unpack_targz(bytes.to_vec()).await),
                 Some("zip") => todo!(),
                 Some(&_) => todo!(),
