@@ -13,5 +13,6 @@ async_zip = { version = "0.0.15", features = ["tokio", "tokio-fs", "deflate"] }
 axum = { version = "0.6.20", features = ["multipart", "macros"] }
 futures-io = "0.3.28"
 image = { version = "0.24.7", features = ["webp", "webp-encoder"] }
+pulldown-cmark = "0.9.3"
 rand = "0.8.5"
 tokio = { version = "1.32.0", features = ["macros", "rt-multi-thread", "fs", "io-util"] }
