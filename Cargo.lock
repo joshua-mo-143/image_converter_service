@@ -772,22 +772,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "imageconverter"
-version = "0.1.0"
-dependencies = [
- "async-compression 0.4.2",
- "async-std",
- "async-tar",
- "async_zip",
- "axum",
- "futures-io",
- "image",
- "pulldown-cmark",
- "rand",
- "tokio",
-]
-
-[[package]]
 name = "instant"
 version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1637,6 +1621,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "12ff0ebb440d1db63b778cb609db8a8abfda825a7841664a76a70b628502c7e1"
 dependencies = [
  "libwebp-sys",
+]
+
+[[package]]
+name = "webpnator"
+version = "0.1.0"
+dependencies = [
+ "async-compression 0.4.2",
+ "async-std",
+ "async-tar",
+ "async_zip",
+ "axum",
+ "futures-io",
+ "image",
+ "pulldown-cmark",
+ "rand",
+ "tokio",
 ]
 
 [[package]]

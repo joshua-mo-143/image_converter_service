@@ -1,8 +1,7 @@
 use async_compression::futures::bufread::GzipDecoder;
 use async_compression::tokio::write::GzipEncoder;
-use async_std::fs::File as AsyncFile;
-use async_std::io::WriteExt;
 use async_std::stream::StreamExt;
+use async_tar::Header;
 use async_tar::{Archive, Builder};
 use async_zip::tokio::write::ZipFileWriter;
 use async_zip::{Compression, ZipEntryBuilder};
@@ -20,7 +19,7 @@ use image::ImageFormat;
 use rand::distributions::{Alphanumeric, DistString};
 use std::io::Cursor;
 use std::path::PathBuf;
-use tokio::fs::{create_dir, read_dir, File};
+use tokio::fs::{read_dir, File};
 use tokio::io::AsyncReadExt;
 use tokio::io::AsyncWriteExt;
 
@@ -90,21 +89,14 @@ pub async fn unpack_targz(str: Vec<u8>) -> Vec<u8> {
 
     let id = generate_random_string();
     let target_folder = format!("uploads/{id}");
-    let path = PathBuf::from(target_folder.to_owned());
 
-    let unconverted_path = path.join("unconverted");
-    let converted_path = path.join("converted");
-
-    create_dir(target_folder.to_owned()).await.unwrap();
-    create_dir(unconverted_path.to_owned()).await.unwrap();
-    create_dir(converted_path.to_owned()).await.unwrap();
     let mut entries = ar.entries().unwrap();
     while let Some(entry) = entries.next().await {
         let mut entry = entry.unwrap();
-        entry.unpack_in(unconverted_path.to_owned()).await.unwrap();
+        entry.unpack_in(target_folder.to_owned()).await.unwrap();
     }
 
-    let mut unconverted_entries = read_dir(unconverted_path).await.unwrap();
+    let mut unconverted_entries = read_dir(target_folder).await.unwrap();
 
     let mut ar = Builder::new(Vec::new());
     while let Some(entry) = unconverted_entries.next_entry().await.unwrap() {
@@ -117,14 +109,15 @@ pub async fn unpack_targz(str: Vec<u8>) -> Vec<u8> {
 
         let webp = convert_imagebytes_to_webpbytes(vec.into()).await;
 
-        let mut new_filepath = converted_path.clone().join(filename.clone());
-        new_filepath.set_extension("webp");
-	let new_filepath = new_filepath;
-	
-	let mut new_filename = PathBuf::from(filename.clone());	
+        let mut new_filename = PathBuf::from(filename.clone());
         new_filename.set_extension("webp");
-	let mut newfile = AsyncFile::open(new_filepath).await.unwrap();
-	ar.append_file(new_filename, &mut newfile).await.unwrap();
+
+        let mut header = Header::new_gnu();
+        header.set_path(new_filename).unwrap();
+        header.set_size(webp.len().try_into().unwrap());
+        header.set_cksum();
+
+        ar.append(&header, &webp[..]).await.unwrap();
     }
 
     let e = ar.into_inner().await.unwrap();
