@@ -14,7 +14,7 @@ Now all you have to do is visit [http://localhost:8333](http://localhost:8333) a
 You can also use curl to send a request, like so:
 
 ```bash
-curl -X POST -F file=@<image-or-archive-file> http://localhost:8000/convert
+curl -X POST -F file=@<image-or-archive-file> http://localhost:8333/convert
 ```
 
 ## Testing/Development
