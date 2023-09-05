@@ -8,12 +8,10 @@ pub async fn delete_old_uploads() -> Result<(), String> {
         while let Some(entry) = uploads_folder.next_entry().await.unwrap() {
             let metadata = entry.metadata().await.unwrap();
             let filepath = entry.path();
-            let datetime_created = metadata.created().unwrap();
-            if SystemTime::now().duration_since(datetime_created).unwrap()
-                > StdDuration::from_secs(21600)
-            {
+
+
                 remove_dir(&filepath).await.unwrap();
-            }
+
         }
         sleep(Duration::from_secs(600)).await;
     }
