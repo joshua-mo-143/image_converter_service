@@ -1,8 +1,7 @@
 use async_compression::futures::bufread::GzipDecoder;
 use async_compression::tokio::write::GzipEncoder;
-use async_std::fs::File as AsyncFile;
-use async_std::io::WriteExt;
 use async_std::stream::StreamExt;
+use async_tar::Header;
 use async_tar::{Archive, Builder};
 use async_zip::tokio::write::ZipFileWriter;
 use async_zip::{Compression, ZipEntryBuilder};
@@ -58,7 +57,9 @@ pub async fn handle_multipart(
         filedata = match filepath.extension() {
             None => None,
             Some(os_str) => match os_str.to_str() {
-                Some("webp") => Some(convert_imagebytes_to_webpbytes(bytes).await),
+                Some("webp") | Some("png") | Some("jpeg") | Some("jpg") => {
+                    Some(convert_imagebytes_to_webpbytes(bytes).await)
+                }
                 Some("gz") => Some(unpack_targz(bytes.to_vec()).await),
                 Some("zip") => todo!(),
                 Some(&_) => todo!(),
@@ -88,21 +89,15 @@ pub async fn unpack_targz(str: Vec<u8>) -> Vec<u8> {
 
     let id = generate_random_string();
     let target_folder = format!("uploads/{id}");
-    let path = PathBuf::from(target_folder.to_owned());
-
-    let unconverted_path = path.join("unconverted");
-    let converted_path = path.join("converted");
 
     create_dir(target_folder.to_owned()).await.unwrap();
-    create_dir(unconverted_path.to_owned()).await.unwrap();
-    create_dir(converted_path.to_owned()).await.unwrap();
     let mut entries = ar.entries().unwrap();
     while let Some(entry) = entries.next().await {
         let mut entry = entry.unwrap();
-        entry.unpack_in(unconverted_path.to_owned()).await.unwrap();
+        entry.unpack_in(target_folder.to_owned()).await.unwrap();
     }
 
-    let mut unconverted_entries = read_dir(unconverted_path).await.unwrap();
+    let mut unconverted_entries = read_dir(target_folder).await.unwrap();
 
     let mut ar = Builder::new(Vec::new());
     while let Some(entry) = unconverted_entries.next_entry().await.unwrap() {
@@ -115,15 +110,16 @@ pub async fn unpack_targz(str: Vec<u8>) -> Vec<u8> {
 
         let webp = convert_imagebytes_to_webpbytes(vec.into()).await;
 
-        let mut new_filepath = converted_path.clone().join(filename.clone());
-        new_filepath.set_extension("webp");
-        let mut newfile = AsyncFile::create(new_filepath).await.unwrap();
-        newfile.write_all(&webp).await.unwrap();
+        let mut new_filename = PathBuf::from(filename.clone());
+        new_filename.set_extension("webp");
 
-        ar.append_file(filename, &mut newfile).await.unwrap();
+        let mut header = Header::new_gnu();
+        header.set_path(new_filename).unwrap();
+        header.set_size(webp.len().try_into().unwrap());
+        header.set_cksum();
+
+        ar.append(&header, &webp[..]).await.unwrap();
     }
-
-    ar.append_dir(converted_path, ".").await.unwrap();
 
     let e = ar.into_inner().await.unwrap();
 
