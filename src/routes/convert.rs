@@ -19,7 +19,7 @@ use image::ImageFormat;
 use rand::distributions::{Alphanumeric, DistString};
 use std::io::Cursor;
 use std::path::PathBuf;
-use tokio::fs::{read_dir, File};
+use tokio::fs::{create_dir, read_dir, File};
 use tokio::io::AsyncReadExt;
 use tokio::io::AsyncWriteExt;
 
@@ -90,6 +90,7 @@ pub async fn unpack_targz(str: Vec<u8>) -> Vec<u8> {
     let id = generate_random_string();
     let target_folder = format!("uploads/{id}");
 
+    create_dir(target_folder.to_owned()).await.unwrap();
     let mut entries = ar.entries().unwrap();
     while let Some(entry) = entries.next().await {
         let mut entry = entry.unwrap();
